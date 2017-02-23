@@ -4,28 +4,46 @@ import Part
 import time
 App=FreeCAD
 
-def bisectSliceWire(obj, layerThickness, layerLocation=0.5): 
-    '''bisectSlicePart(obj, layerThickness, layerLocation) splits an object
-       into that are layerThickness millimeters thick
+def bisectCrossSections(obj, layerThickness, layerLocation=0.5): 
+    '''bisectSliceWire(obj, layerThickness, layerLocation) splits an object
+       into wires at layerThickness intervals along the Z axis, and distributes
+       the wire shapes on a plane. If you want to laser cut a 3-dimensional
+       object in 4mm plywood, run bisectSliceWire(object, 4), and you will get
+       the laser cutting paths necessary.
+
+       layerLocation is a range from [0.0, 1.0] that specifies where in each
+       layerThickness segment the wire should cut, where 0.0 is the bottom,
+       0.5 is the center, and 1.0 is the top. Values outside the accepted range
+       are truncated.
+
+       This script was initially based on slicePart() from the script available on
+       http://freecadbuch.de/doku.php?id=blog:schnittmodell_eines_hauses_fuer_den_laser-schneider
+
+       This script uses an optimisation for complex objects that includes
+       cutting the original object into two, and then cutting each segment in
+       two, repeating until the segments are suitably small. This has resulted
+       in a time optimisation on the order of 50-60x on my laptop, for a freecad
+       object that was created from a mesh, as shown in
+       https://www.youtube.com/watch?v=avVNfIswkMU
     '''
-    # fullShape=obj.Shape
     layerLocation=max(0.0, layerLocation) # enforce sensible limits
     layerLocation=min(1.0, layerLocation)
     sections = []   
-    # sectionsBaseZ = []
     workSections = [obj]
-    # TODO: Specialcase for obj.ZLength <= layerThickness
     i = 0
     while len(workSections) > 0:
         o = workSections.pop(0)
-        shape = o.Shape
-        b=shape.BoundBox
-        lx=b.XLength
-        ly=b.YLength
-        lz=b.ZLength
+        b = o.Shape.BoundBox
+        lx = b.XLength
+        ly = b.YLength
+        lz = b.ZLength
+
+        if lz < layerThickness:
+            sections.append(o)
+            continue
+
         label_boxbothalf = "box_bottom_half_{0}".format(i)
         label_bothalf = "bottom_half_{0}".format(i)
-        label_boxtophalf = "box_top_half_{0}".format(i)
         label_tophalf = "top_half_{0}".format(i)
 
         # create bottom half with Intersection boolean op
@@ -56,7 +74,6 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
 
         i = i + 1
  
-    print "Sections done, start getting perimeters.."
     g2=App.ActiveDocument.addObject("App::DocumentObjectGroup",str(obj.Label) + "_Slices")
 
     total_zmin = obj.Shape.BoundBox.ZMin
@@ -94,20 +111,25 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
                     print "Caught exception:", repr(e)
         total_step += step
         current_z = start_z + total_step
-        print "current_z:", current_z
 
-#        for section in sections:
-#            section.ViewObject.Visibility = False
+    for section in sections:
+        section.ViewObject.Visibility = False
 
+    App.activeDocument().recompute()
+
+#start = time.time()
+bisectCrossSections(App.ActiveDocument.Solid, 4)
+#end = time.time()
+#print "Total time taken before recompute:", end-start, "seconds"
+#App.activeDocument().recompute()
+#end = time.time()
+#print "Total time taken after recompute:", end-start, "seconds"
 
 
 start = time.time()
-bisectSliceWire(App.ActiveDocument.Solid, 4, 0.5)
 end = time.time()
-print "Total time taken before recompute:", end-start, "seconds"
-App.activeDocument().recompute()
-end = time.time()
-print "Total time taken after recompute:", end-start, "seconds"
+print "Time to delete sections:", end-start, "seconds"
+
 
 
 
