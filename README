@@ -1,0 +1,12 @@
+To use:
+1. Run bisectSliceWire(object, thickness) in FreeCAD on object
+2. Select all objects in the Solid_Slices group
+3. Export to flattened SVG
+4. Import to Inkscape
+5. Select all with Ctrl-A
+6. Choose Object->Ungroup (Shift-Ctrl-G)
+7. Add a box the size of your plate to cut from, and lower box (Object->Lower to bottom)
+8. Save as SVG from inkscape
+9. Open SVGNest, load SVG
+10. Select the box you added, and click "Start Nest"
+11. Leave running until satisfied, save SVG and lasercut result
