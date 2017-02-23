@@ -1,5 +1,5 @@
 To use:
-1. Run bisectSliceWire(object, thickness) in FreeCAD on object
+1. Run bisectCrossSections(object, thickness) in FreeCAD on object
 2. Select all objects in the Solid_Slices group
 3. Export to flattened SVG
 4. Import to Inkscape
