@@ -1,7 +1,6 @@
 from FreeCAD import Base
 import Draft
 import Part
-import time
 App=FreeCAD
 
 def bisectCrossSections(obj, layerThickness, layerLocation=0.5): 
