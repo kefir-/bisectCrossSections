@@ -42,6 +42,8 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
         top_half.Base = o
         top_half.Tool = s
 
+        App.ActiveDocument.recompute()
+
         if bottom_half.Shape.BoundBox.ZLength > layerThickness*2:
             workSections.append(bottom_half)
         else:
@@ -53,8 +55,7 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
             sections.append(top_half)
 
         i = i + 1
-        App.activeDocument().recompute()
-
+ 
     print "Sections done, start getting perimeters.."
     g2=App.ActiveDocument.addObject("App::DocumentObjectGroup",str(obj.Label) + "_Slices")
 
@@ -77,18 +78,11 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
                     wires = list()
                     for i in section.Shape.slice(FreeCAD.Base.Vector(0,0,1),current_z):
                         wires.append(i)
-                    comp = Part.Compound(wires) # necessary?
+                    comp = Part.Compound(wires)
                     layer = FreeCAD.ActiveDocument.addObject("Part::Feature", "MyLayer")
                     layer.Shape = comp
                     layer.purgeTouched()
                     layer.Placement.Base = FreeCAD.Vector(out_x, out_y, -current_z)
-#                    # del comp
-#                    # del wires
-#                    t = FreeCAD.ActiveDocument.addObject("Part::Extrusion", "Extrude")
-#                    t.Base = layer
-#                    t.Dir = (0, 0, layerThickness)
-#                    t.Solid = True
-#                    t.Placement.Base=FreeCAD.Vector(out_x, out_y, -current_z)
                     out_x = out_x + lx
 
                     if out_x > 400:
@@ -96,14 +90,14 @@ def bisectSliceWire(obj, layerThickness, layerLocation=0.5):
                         out_y = out_y + ly
                     g2.addObject(layer)
 
-                    if section.Shape.BoundBox.ZMax - current_z < step:
-                        section.ViewObject.Visibility = False
-
                 except Exception as e:
                     print "Caught exception:", repr(e)
         total_step += step
         current_z = start_z + total_step
         print "current_z:", current_z
+
+#        for section in sections:
+#            section.ViewObject.Visibility = False
 
 
 
