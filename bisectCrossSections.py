@@ -108,7 +108,7 @@ def bisectCrossSections(obj, layerThickness, layerLocation=0.5, archPanels=False
                         out_x = 0
                         out_y = out_y + ly
                     g2.addObject(layer)
-                        break
+                    break
 
                 except Exception as e:
                     print "Caught exception:", repr(e)
