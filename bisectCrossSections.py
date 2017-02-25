@@ -1,6 +1,7 @@
 from FreeCAD import Base
 import Draft
 import Part
+import Arch
 App=FreeCAD
 
 def bisectCrossSections(obj, layerThickness, layerLocation=0.5, archPanels=False): 
@@ -121,7 +122,7 @@ def bisectCrossSections(obj, layerThickness, layerLocation=0.5, archPanels=False
     if archPanels:
         for cross_section in cross_sections:
             tmp=Part.makeFilledFace(Part.__sortEdges__([cross_section.Shape.Edge1, ]))
-            if _.isNull(): raise RuntimeError('Failed to create face')
+            if tmp.isNull(): raise RuntimeError('Failed to create face')
             face = App.ActiveDocument.addObject('Part::Feature','Face')
             face.Shape=tmp
             del tmp
