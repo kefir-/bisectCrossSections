@@ -15,6 +15,12 @@ To use, try something like this:
 10. Select the box you added, and click "Start Nest"
 11. Leave running until satisfied, save SVG and lasercut result
 
+If you want to create Arch Panels instead of the simple outlines when
+creating the slices, simply add the argument archPanels=True, something 
+like the following example. The panels will have the thickness specified.
+
+    bisectCrossSections(App.ActiveDocument.Cone002, 4.0, archPanels=True)
+
 If you have a mesh and not a solid, you can try to convert it using this method:
 https://www.youtube.com/watch?v=avVNfIswkMU
 
