@@ -3,7 +3,7 @@ import Draft
 import Part
 App=FreeCAD
 
-def bisectCrossSections(obj, layerThickness, layerLocation=0.5): 
+def bisectCrossSections(obj, layerThickness, layerLocation=0.5, archPanels=False): 
     '''bisectSliceWire(obj, layerThickness, layerLocation) splits an object
        into wires at layerThickness intervals along the Z axis, and distributes
        the wire shapes on a plane. If you want to laser cut a 3-dimensional
@@ -84,8 +84,9 @@ def bisectCrossSections(obj, layerThickness, layerLocation=0.5):
     out_y=0
     start_z = total_zmin + (layerThickness * layerLocation)
     step = layerThickness
-    total_step = step
-    current_z = start_z + total_step
+    total_step = 0
+    current_z = start_z
+    cross_sections = []
     while current_z <= total_zmax:
         # Find the correct section in sections[]
         for section in sections:
@@ -99,12 +100,15 @@ def bisectCrossSections(obj, layerThickness, layerLocation=0.5):
                     layer.Shape = comp
                     layer.purgeTouched()
                     layer.Placement.Base = FreeCAD.Vector(out_x, out_y, -current_z)
+                    if archPanels:
+                        cross_sections.append(layer)
                     out_x = out_x + lx
 
                     if out_x > 400:
                         out_x = 0
                         out_y = out_y + ly
                     g2.addObject(layer)
+                        break
 
                 except Exception as e:
                     print "Caught exception:", repr(e)
@@ -113,6 +117,16 @@ def bisectCrossSections(obj, layerThickness, layerLocation=0.5):
 
     for section in sections:
         section.ViewObject.Visibility = False
+
+    if archPanels:
+        for cross_section in cross_sections:
+            tmp=Part.makeFilledFace(Part.__sortEdges__([cross_section.Shape.Edge1, ]))
+            if _.isNull(): raise RuntimeError('Failed to create face')
+            face = App.ActiveDocument.addObject('Part::Feature','Face')
+            face.Shape=tmp
+            del tmp
+            cross_section.ViewObject.Visibility = False
+            Arch.makePanel(face,thickness=layerThickness)
 
     App.activeDocument().recompute()
 
